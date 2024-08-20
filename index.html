@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jungle Treasure Hunt</title>
+    <style>
+        body {
+            background-color: #4caf50;
+            font-family: Arial, sans-serif;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            max-width: 600px; /* Max width for larger screens */
+            margin: auto; /* Center align */
+        }
+
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+            margin: 10px 0;
+            width: 100%; /* Take full width */
+            box-sizing: border-box; /* Ensure padding is included in width */
+        }
+
+        button {
+            padding: 15px 20px; /* Increased padding for buttons */
+            cursor: pointer;
+        }
+
+        .coin {
+            width: 50px; /* Diameter of the coin */
+            height: 50px; /* Diameter of the coin */
+            background-color: gold; /* Color of the coin */
+            border-radius: 50%; /* Makes it circular */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 30px; /* Start position of the coin */
+            transition: margin-top 1s; /* Animate jump */
+            font-size: 24px; /* Size of the coin character */
+        }
+
+        #attempts {
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid white;
+            padding: 10px;
+            text-align: center;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 24px; /* Smaller font for mobile */
+            }
+
+            input, button {
+                font-size: 14px; /* Smaller font for mobile */
+            }
+
+            .coin {
+                width: 40px; /* Smaller coin */
+                height: 40px; /* Smaller coin */
+                font-size: 20px; /* Smaller text in coin */
+            }
+
+            table {
+                font-size: 14px; /* Smaller font size for table */
+            }
+        }
+
+        /* Additional Responsive Styling */
+        @media (max-width: 480px) {
+            button {
+                padding: 12px; /* Adjust button padding for very small screens */
+                font-size: 14px; /* Ensure button text is readable */
+            }
+
+            .coin {
+                width: 35px; /* Further reduce coin size for very small screens */
+                height: 35px;
+                font-size: 18px; /* Smaller text in coin */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Jungle Treasure Hunt</h1>
+        
+        <div id="login-container">
+            <input type="text" id="team-name" placeholder="Enter Team Name" autocomplete="off">
+            <button id="login-button">Start</button>
+        </div>
+        
+        <div id="game-container" style="display: none;">
+            <div class="clue" id="clue">Clue 1: Find the hidden waterfall.</div>
+            <input type="text" id="answer" placeholder="Enter your answer here" autocomplete="off">
+            <button id="submit">Submit</button>
+            <div id="attempts">Attempts left: 3</div>
+            <div class="coin" id="coin">
+                <span id="coin-number">1</span>
+            </div>
+            <h3 id="result-message"></h3> 
+            <h3 id="timer"></h3> 
+        </div>
+        
+        <div id="results-container" style="display: none;">
+            <h2>Results</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Team Name</th>
+                        <th>Time Taken</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body"></tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        const clues = [
+            "Find the hidden waterfall.",
+            "Look for the ancient tree.",
+            "Search near the rocky cave.",
+            "Discover the vine-covered ruins.",
+            "Unearth the treasure at the sunny clearing.",
+            "Track the footprints of the jungle cat.",
+            "Listen for the howler monkeys.",
+            "Find the flower in the shadow.",
+            "Search the marshy ground.",
+            "Look at the river's edge."
+        ];
+
+        const answers = [
+            "waterfall",
+            "tree",
+            "cave",
+            "ruins",
+            "clearing",
+            "cat",
+            "monkeys",
+            "flower",
+            "marsh",
+            "river"
+        ];
+
+        let maxAttempts = 3;
+        let currentBase = 0;
+        let attemptsLeft = maxAttempts;
+        let startTime;
+        let timerInterval;
+        let teamName = '';
+
+        function startTimer() {
+            const timerElement = document.getElementById("timer");
+            startTime = new Date();
+            timerInterval = setInterval(() => {
+                const elapsedTime = Math.floor((new Date() - startTime) / 1000); // Time in seconds
+                timerElement.innerText = `Time Elapsed: ${elapsedTime}s`;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        document.getElementById("login-button").addEventListener("click", function() {
+            teamName = document.getElementById("team-name").value;
+
+            if (teamName.trim() !== "") {
+                document.getElementById("login-container").style.display = "none";
+                document.getElementById("game-container").style.display = "flex";
+                startTimer();
+            } else {
+                alert("Please enter a valid team name.");
+            }
+        });
+
+        document.getElementById("submit").addEventListener("click", function() {
+            const answerInput = document.getElementById("answer").value.toLowerCase().trim();
+
+            if (currentBase < clues.length) {
+                if (answerInput === answers[currentBase]) {
+                    // Animate coin jump
+                    document.getElementById("coin").style.marginTop = `${30 + currentBase * 50}px`; // Jump to new position
+                    
+                    // Update coin number
+                    const previousBase = currentBase + 1; // Previous base number
+                    document.getElementById("coin-number").innerText = `${previousBase}`; // Display base number on the coin
+                    
+                    currentBase++;
+                    attemptsLeft = maxAttempts; // Reset attempts on correct answer
+
+                    if (currentBase < clues.length) {
+                        document.getElementById("clue").innerText = `Clue ${currentBase + 1}: ${clues[currentBase]}`;
+                        document.getElementById("answer").value = '';
+                        document.getElementById("attempts").innerText = `Attempts left: ${attemptsLeft}`;
+                    } else {
+                        stopTimer();
+                        document.getElementById("game-container").style.display = "none";
+                        document.getElementById("results-container").style.display = "flex";
+                        const elapsedTime = Math.floor((new Date() - startTime) / 1000);
+                        document.getElementById("results-body").innerHTML = `<tr><td>${teamName}</td><td>${elapsedTime}s</td></tr>`;
+                    }
+                } else {
+                    attemptsLeft--;
+                    if (attemptsLeft <= 0) {
+                        stopTimer();
+                        alert("You've run out of attempts!");
+                        document.getElementById("game-container").style.display = "none";
+                        document.getElementById("results-container").style.display = "flex";
+                        document.getElementById("results-body").innerHTML = `<tr><td>${teamName}</td><td>Failed</td></tr>`;
+                    } else {
+                        document.getElementById("attempts").innerText = `Attempts left: ${attemptsLeft}`;
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
